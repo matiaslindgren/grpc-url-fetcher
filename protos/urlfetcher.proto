@@ -1,0 +1,22 @@
+syntax = "proto3";
+
+package urlfetcher;
+
+service URLFetcher {
+  rpc RequestFetch (stream Request) returns (stream PendingFetch) {}
+  rpc ResolveFetch (stream PendingFetch) returns (stream Response) {}
+}
+
+message Request {
+  string url = 1;
+}
+
+message PendingFetch {
+  uint64 key = 1;
+}
+
+message Response {
+  string header = 1;
+  string body = 2;
+  int32 curl_error = 3;
+}
