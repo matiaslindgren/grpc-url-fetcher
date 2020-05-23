@@ -20,8 +20,7 @@ decltype(auto) parse_args_or_exit(int argc, char** argv) {
          "gRPC serving address, clients should connect to this",
          cxxopts::value<std::string>()->default_value("localhost:8000"))
         ("t,threads",
-         "Number of concurrent threads to spawn for fetching requested URLs",
-         cxxopts::value<int>()->default_value(std::to_string(urlfetcher::server::NUM_FETCH_THREADS)))
+         "Number of concurrent threads to spawn for fetching requested URLs")
         ;
     auto args = options.parse(argc, argv);
     if (args.count("help")) {
@@ -49,7 +48,11 @@ decltype(auto) parse_args_or_exit(int argc, char** argv) {
 int main(int argc, char** argv) {
     auto args = parse_args_or_exit(argc, argv);
     std::string server_address = args["address"].as<std::string>();
-    int num_fetcher_threads = args["threads"].as<int>();
-    run_forever(server_address, num_fetcher_threads);
+    if (args.count("threads")) {
+        run_forever(server_address, args["threads"].as<int>());
+    }
+    else {
+        run_forever(server_address);
+    }
     return 0;
 }

@@ -37,7 +37,7 @@ public:
         stub_ = URLFetcher::NewStub(channel);
     }
 
-    std::vector<uint64> request_fetch(const std::vector<std::string>& urls) {
+    std::vector<uint64> request_fetches(const std::vector<std::string>& urls) {
         logger->info("Requesting {:d} urls from server", urls.size());
         ClientContext context;
         std::shared_ptr<ClientReaderWriter<Request, PendingFetch> > stream(stub_->RequestFetch(&context));
@@ -66,7 +66,7 @@ public:
         return keys;
     }
 
-    std::vector<Response> resolve_fetch(const std::vector<uint64>& keys) {
+    std::vector<Response> resolve_fetches(const std::vector<uint64>& keys) {
         logger->info("Resolving {:d} pending fetches", keys.size());
         ClientContext context;
         std::shared_ptr<ClientReaderWriter<PendingFetch, Response> > stream(stub_->ResolveFetch(&context));
@@ -105,8 +105,8 @@ private:
 
 std::vector<Response> fetch_urls_from_server(const std::vector<std::string>& urls, const std::string& server_address) {
     URLFetcherClient fetcher(server_address);
-    auto keys = fetcher.request_fetch(urls);
-    return fetcher.resolve_fetch(keys);
+    auto keys = fetcher.request_fetches(urls);
+    return fetcher.resolve_fetches(keys);
 }
 
 

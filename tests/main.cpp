@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <csignal>
-#include <iterator>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -56,7 +55,7 @@ TEST_CASE("Server terminates on SIGINT and SIGTERM", "[server]") {
     }
 }
 
-TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch", "[request-fetch]") {
+TEST_CASE("Server returns monotonically increasing UUIDs for request_fetches", "[request-fetches]") {
     using urlfetcher::server::run_forever;
     using urlfetcher::server::shutdown_handler;
     using urlfetcher::client::URLFetcherClient;
@@ -69,7 +68,7 @@ TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch", "[r
     for (auto num_urls : {0, 1, 10, 100, 1000, 10'000}) {
         std::vector<std::string> urls = generate_localhost_echo_urls(num_urls);
         URLFetcherClient fetcher(grpc_test_address);
-        auto keys = fetcher.request_fetch(urls);
+        auto keys = fetcher.request_fetches(urls);
         REQUIRE(keys.size() == urls.size());
         // UUIDs are generated for each new RPC and gRPC streams are ordered <-> returned UUIDs must be sorted
         REQUIRE(std::is_sorted(keys.begin(), keys.end()));
@@ -85,7 +84,7 @@ TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch", "[r
     REQUIRE(true);
 }
 
-TEST_CASE("Server returns resolved URLs when requested with the UUIDs from request_fetch", "[resolve-fetch]") {
+TEST_CASE("Server returns resolved URLs when requested with the UUIDs from request_fetches", "[resolve-fetches]") {
     using urlfetcher::server::run_forever;
     using urlfetcher::server::shutdown_handler;
     using urlfetcher::client::URLFetcherClient;
@@ -96,9 +95,9 @@ TEST_CASE("Server returns resolved URLs when requested with the UUIDs from reque
     for (auto num_urls : {0, 1, 10, 100, 1000, 10'000}) {
         std::vector<std::string> urls = generate_localhost_echo_urls(num_urls);
         URLFetcherClient fetcher(grpc_test_address);
-        auto keys = fetcher.request_fetch(urls);
+        auto keys = fetcher.request_fetches(urls);
         REQUIRE(keys.size() == urls.size());
-        auto responses = fetcher.resolve_fetch(keys);
+        auto responses = fetcher.resolve_fetches(keys);
         REQUIRE(responses.size() == urls.size());
         for (int i = 0; i < urls.size(); ++i) {
             // The echo server returns just the route key,
@@ -125,9 +124,9 @@ TEST_CASE("fetch_urls_from_server convenience method and the URLFetcherClient bo
     for (auto num_urls : {0, 1, 10, 100, 1000, 10'000}) {
         std::vector<std::string> urls = generate_localhost_echo_urls(num_urls);
         URLFetcherClient fetcher(grpc_test_address);
-        auto keys = fetcher.request_fetch(urls);
+        auto keys = fetcher.request_fetches(urls);
         REQUIRE(keys.size() == urls.size());
-        auto responses_1 = fetcher.resolve_fetch(keys);
+        auto responses_1 = fetcher.resolve_fetches(keys);
         auto responses_2 = fetch_urls_from_server(urls, grpc_test_address);
         REQUIRE(responses_1.size() == urls.size());
         REQUIRE(responses_1.size() == responses_2.size());
@@ -191,7 +190,7 @@ TEST_CASE("All URLs fetched by the URLFetcherService have correct HTTP status co
     }
 }
 
-TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch for multiple concurrent clients", "[request-fetch-concurrent]") {
+TEST_CASE("Server returns monotonically increasing UUIDs for request_fetches for multiple concurrent clients", "[request-fetches-concurrent]") {
     using urlfetcher::Response;
     using urlfetcher::server::run_forever;
     using urlfetcher::server::shutdown_handler;
@@ -209,7 +208,7 @@ TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch for m
             std::mutex keys_lock;
             auto fetch_urls_and_write_results_with_lock = [&urls, &keys_lock, &all_keys](int t) -> void {
                 URLFetcherClient fetcher(grpc_test_address);
-                auto keys = fetcher.request_fetch(urls);
+                auto keys = fetcher.request_fetches(urls);
                 {
                     std::unique_lock<std::mutex> lock(keys_lock);
                     all_keys[t] = keys;
@@ -233,7 +232,7 @@ TEST_CASE("Server returns monotonically increasing UUIDs for request_fetch for m
     REQUIRE(true);
 }
 
-TEST_CASE("Server returns resolved URLs when requested with the UUIDs from request_fetch for multiple concurrent clients", "[resolve-fetch-concurrent]") {
+TEST_CASE("Server returns resolved URLs when requested with the UUIDs from request_fetches for multiple concurrent clients", "[resolve-fetches-concurrent]") {
     using urlfetcher::Response;
     using urlfetcher::server::run_forever;
     using urlfetcher::server::shutdown_handler;
@@ -251,8 +250,8 @@ TEST_CASE("Server returns resolved URLs when requested with the UUIDs from reque
             std::mutex responses_lock;
             auto fetch_urls_and_write_results_with_lock = [&urls, &responses_lock, &all_responses](int t) -> void {
                 URLFetcherClient fetcher(grpc_test_address);
-                auto keys = fetcher.request_fetch(urls);
-                auto responses = fetcher.resolve_fetch(keys);
+                auto keys = fetcher.request_fetches(urls);
+                auto responses = fetcher.resolve_fetches(keys);
                 {
                     std::unique_lock<std::mutex> lock(responses_lock);
                     all_responses[t] = responses;
