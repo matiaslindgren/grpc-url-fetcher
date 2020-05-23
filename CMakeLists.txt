@@ -84,3 +84,13 @@ foreach(_target URLFetcherClient URLFetcherServer)
     ${_PROTOBUF_LIBPROTOBUF}
     ${CURL_LIBRARY})
 endforeach()
+add_executable(test "../tests/main.cpp"
+  ${hw_proto_srcs}
+  ${hw_grpc_srcs})
+target_link_libraries(test
+  ${_REFLECTION}
+  ${_GRPC_GRPCPP}
+  ${_PROTOBUF_LIBPROTOBUF}
+  ${CURL_LIBRARY})
+configure_file(tests/http-statuscodes.csv . COPYONLY)
+configure_file(tests/common_urls.list . COPYONLY)
