@@ -1,0 +1,5 @@
+curl --location https://raw.githubusercontent.com/jarro2783/cxxopts/v2.2.0/include/cxxopts.hpp --output cxxopts/cxxopts.hpp
+curl --location https://github.com/catchorg/Catch2/releases/download/v2.12.1/catch.hpp --output catch2/catch.hpp
+mkdir -pv ~/.local/spdlog && curl --location https://github.com/gabime/spdlog/archive/v1.6.0.tar.gz | tar --extract --gunzip --strip-components 1 --directory ~/.local/spdlog | ln -s ~/.local/spdlog/include/spdlog ~/.local/include/spdlog
+mkdir -pv ~/.local/cameron314/concurrentqueue && curl --location https://github.com/cameron314/concurrentqueue/archive/v1.0.1.tar.gz | tar --extract --gunzip --strip-components 1 --directory ~/.local/cameron314/concurrentqueue | ln -s ~/.local/cameron314/concurrentqueue ~/.local/include/concurrentqueue
+mkdir -pv ~/.local/fmtlib/fmt && curl --location https://github.com/fmtlib/fmt/archive/6.2.1.tar.gz | tar --extract --gunzip --strip-components 1 --directory ~/.local/fmtlib/fmt | ln -s ~/.local/fmtlib/fmt/include/fmt ~/.local/include/fmt
