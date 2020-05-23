@@ -36,7 +36,7 @@ using urlfetcher::URLFetcher;
 auto logger = spdlog::stdout_logger_mt("URLFetcherServer");
 
 constexpr long TIMEOUT_CURL_GET_MS{60'000L};
-constexpr int NUM_FETCH_THREADS{5};
+constexpr int NUM_FETCH_THREADS{16};
 constexpr int FETCHER_THREAD_WAIT_ON_EMPTY_MS{200};
 
 
@@ -68,7 +68,6 @@ Response fetch_URL(const std::string& url) {
         // Perform the request
         logger->debug("cURL performing GET on '{:s}' with timeout {:d} ms", url, TIMEOUT_CURL_GET_MS);
         CURLcode error = curl_easy_perform(curl);
-        std::this_thread::sleep_for(std::chrono::seconds(3));
         // Write response object if there were no errors
         if (error != CURLE_OK) {
             logger->error("cURL GET failed with error string '{:s}'", curl_easy_strerror(error));
@@ -87,7 +86,7 @@ Response fetch_URL(const std::string& url) {
 
 class URLFetcherService final : public URLFetcher::Service {
 public:
-    URLFetcherService() {
+    explicit URLFetcherService(int num_fetcher_threads) : fetchers_(num_fetcher_threads) {
         StartFetcherThreads();
     }
     ~URLFetcherService() noexcept {
@@ -203,7 +202,7 @@ private:
     }
 
     std::atomic<uint64> previous_uuid_{0};
-    std::array<std::thread, NUM_FETCH_THREADS> fetchers_;
+    std::vector<std::thread> fetchers_;
     bool is_fetching_;
     moodycamel::BlockingConcurrentQueue<std::pair<uint64, std::string> > fetch_queue_;
     std::unordered_map<uint64, Response> completed_fetches_;
@@ -217,10 +216,10 @@ private:
 std::function<void(int)> shutdown_handler;
 void signal_handler(int signal) { shutdown_handler(signal); }
 
-void run_forever(const std::string& address) {
+void run_forever(const std::string& address, int num_fetcher_threads = NUM_FETCH_THREADS) {
     ServerBuilder builder;
     builder.AddListeningPort(address, grpc::InsecureServerCredentials());
-    URLFetcherService service;
+    URLFetcherService service(num_fetcher_threads);
     builder.RegisterService(&service);
     std::unique_ptr<Server> server(builder.BuildAndStart());
     logger->info("Server listening on '{:s}'", address);

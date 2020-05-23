@@ -4,7 +4,7 @@
 
 
 using urlfetcher::Response;
-using urlfetcher::client::URLFetcherClient;
+using urlfetcher::client::fetch_urls_from_server;
 using urlfetcher::client::logger;
 
 
@@ -45,7 +45,6 @@ decltype(auto) parse_args_or_exit(int argc, char** argv) {
 int main(int argc, char** argv) {
     auto args = parse_args_or_exit(argc, argv);
     std::string server_address = args["address"].as<std::string>();
-    URLFetcherClient fetcher(server_address);
     std::vector<std::string> urls = {
         "https://matiaslindgren.github.io/",
         "https://httpstat.us/200",
@@ -53,7 +52,6 @@ int main(int argc, char** argv) {
         "https://httpstat.us/404",
         "https://yle.fi",
     };
-    auto keys = fetcher.request_fetch(urls);
-    auto responses = fetcher.resolve_fetch(keys);
+    auto responses = fetch_urls_from_server(urls, server_address);
     return 0;
 }

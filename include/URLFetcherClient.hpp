@@ -103,6 +103,13 @@ private:
 };
 
 
+std::vector<Response> fetch_urls_from_server(const std::vector<std::string>& urls, const std::string& server_address) {
+    URLFetcherClient fetcher(server_address);
+    auto keys = fetcher.request_fetch(urls);
+    return fetcher.resolve_fetch(keys);
+}
+
+
 } // namespace urlfetcher
 
 #endif // INCLUDED_URLFETCHERCLIENT_HPP
