@@ -13,7 +13,7 @@ using urlfetcher::server::run_forever;
 
 int main(int argc, char** argv) {
     std::string grpc_address{"localhost:8000"};
-    int thread_pool_size{16};
+    int thread_pool_size{8};
     run_forever(grpc_address, thread_pool_size);
     return 0;
 }
