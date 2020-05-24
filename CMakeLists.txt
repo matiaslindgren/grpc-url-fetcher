@@ -22,7 +22,7 @@ project(URLFetcher C CXX)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17")
 
 find_package(Threads REQUIRED)
-find_library(CURL_LIBRARY NAMES curl curllib)
+find_library(CURL_LIBRARY NAMES curl)
 
 # Find Protobuf installation
 # Looks for protobuf-config.cmake file installed by Protobuf's cmake installation.
@@ -84,10 +84,10 @@ foreach(_target URLFetcherClient URLFetcherServer)
     ${_PROTOBUF_LIBPROTOBUF}
     ${CURL_LIBRARY})
 endforeach()
-add_executable(test "../tests/main.cpp"
+add_executable(URLFetcherTests "../tests/main.cpp"
   ${hw_proto_srcs}
   ${hw_grpc_srcs})
-target_link_libraries(test
+target_link_libraries(URLFetcherTests
   ${_REFLECTION}
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
