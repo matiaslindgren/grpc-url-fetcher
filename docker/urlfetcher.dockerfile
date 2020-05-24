@@ -1,4 +1,4 @@
-# Build URL fetcher and all its dependencies, then copy the binaries into a minimal runtime image
+# Build grpc-url-fetcher and all its dependencies, then copy the binaries into a minimal runtime image
 
 # Step 1: Build gRPC and the URL fetcher project
 FROM debian:buster-slim
@@ -60,10 +60,10 @@ RUN \
 	&& make -j
 
 
-# Step 2: Create runtime environment without build stuff installed in the above step
+# Step 2: Create runtime environment without build stuff that we installed above
 FROM debian:buster-slim
 
-# Copy compiled binaries from previous step 1
+# Copy compiled binaries from the previous step, we don't need anything else
 COPY --from=0 /usr/src/urlfetcher/build/URLFetcher* /usr/local/bin/
 
 # Install runtime dependencies
