@@ -36,7 +36,7 @@ using urlfetcher::URLFetcher;
 auto logger = spdlog::stdout_logger_mt("URLFetcherServer");
 
 constexpr long TIMEOUT_CURL_GET_MS{60'000L};
-constexpr int NUM_FETCH_THREADS{16};
+constexpr int NUM_FETCH_THREADS{8};
 constexpr int FETCHER_THREAD_WAIT_ON_EMPTY_MS{200};
 
 
