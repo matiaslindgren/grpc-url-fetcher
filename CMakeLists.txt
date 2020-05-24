@@ -92,5 +92,3 @@ target_link_libraries(URLFetcherTests
   ${_GRPC_GRPCPP}
   ${_PROTOBUF_LIBPROTOBUF}
   ${CURL_LIBRARY})
-configure_file(tests/http-statuscodes.csv . COPYONLY)
-configure_file(tests/common_urls.list . COPYONLY)

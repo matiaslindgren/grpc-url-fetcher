@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <csignal>
 #include <cstdlib>
+#include <iterator>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -13,9 +14,66 @@
 #undef CATCH_CONFIG_MAIN
 #include <fmt/format.h>
 
-const std::string http_echo_service_address{std::getenv("URLFETCHER_ECHO_SERVICE_ADDRESS")};
-const std::string grpc_test_address{std::getenv("URLFETCHER_GRPC_TEST_ADDRESS")};
+
+std::string getenv_or_default(const std::string& key, const std::string& def = "") {
+    auto env_key = std::getenv(key.c_str());
+    return env_key ? env_key : def;
+}
+
+const std::string http_echo_service_address{
+    getenv_or_default("URLFETCHER_ECHO_SERVICE_ADDRESS", "localhost:8000")};
+const std::string grpc_test_address{
+    getenv_or_default("URLFETCHER_GRPC_TEST_ADDRESS", "localhost:7000")};
 const auto test_loglevel{spdlog::level::warn};
+
+constexpr const char* external_urls[]{
+    "https://yle.fi/",
+    "https://www.bbc.co.uk/",
+    "https://google.com/",
+    "https://google.fi/",
+    "https://www.archlinux.org/",
+    "https://www.debian.org/",
+    "https://www.eff.org/",
+    "https://en.wikipedia.org/wiki/Main_Page",
+    "https://fi.wikipedia.org/wiki/Wikipedia:Etusivu",
+};
+
+constexpr const char* http_status_codes[]{
+    "200,OK",
+    "201,Created",
+    "202,Accepted",
+    "203,Non-Authoritative Information",
+    "204,No Content",
+    "205,Reset Content",
+    "300,Multiple Choices",
+    "301,Moved Permanently",
+    "302,Found",
+    "303,See Other",
+    "305,Use Proxy",
+    "306,(Unused)",
+    "307,Temporary Redirect",
+    "400,Bad Request",
+    "402,Payment Required",
+    "403,Forbidden",
+    "404,Not Found",
+    "405,Method Not Allowed",
+    "406,Not Acceptable",
+    "408,Request Timeout",
+    "409,Conflict",
+    "410,Gone",
+    "411,Length Required",
+    "413,Payload Too Large",
+    "414,URI Too Long",
+    "415,Unsupported Media Type",
+    "417,Expectation Failed",
+    "426,Upgrade Required",
+    "500,Internal Server Error",
+    "501,Not Implemented",
+    "502,Bad Gateway",
+    "503,Service Unavailable",
+    "504,Gateway Timeout",
+    "505,HTTP Version Not Supported",
+};
 
 
 std::string random_localhost_echo_url() {
@@ -30,16 +88,6 @@ std::vector<std::string> generate_localhost_echo_urls(size_t num_urls) {
     std::vector<std::string> urls(num_urls);
     std::generate(urls.begin(), urls.end(), random_localhost_echo_url);
     return urls;
-}
-
-std::vector<std::string> slurp_lines(const std::string& filename) {
-    std::ifstream file(filename);
-    std::string line;
-    std::vector<std::string> lines;
-    while (std::getline(file, line, '\n')) {
-        lines.push_back(line);
-    }
-    return lines;
 }
 
 
@@ -157,7 +205,7 @@ TEST_CASE("Fetching common URLs with URLFetcherService returns non-empty respons
     urlfetcher::client::logger->set_level(test_loglevel);
     std::thread server_runner([] { run_forever(grpc_test_address); });
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::vector<std::string> urls = slurp_lines("common_urls.list");
+    std::vector<std::string> urls(std::begin(external_urls), std::end(external_urls));
     REQUIRE(!urls.empty());
     auto responses = fetch_urls_from_server(urls, grpc_test_address);
     shutdown_handler(SIGTERM);
@@ -178,7 +226,7 @@ TEST_CASE("All URLs fetched by the URLFetcherService have correct HTTP status co
     urlfetcher::client::logger->set_level(test_loglevel);
     std::thread server_runner([]{ run_forever(grpc_test_address); });
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::vector<std::string> urls = slurp_lines("http-statuscodes.csv");
+    std::vector<std::string> urls(std::begin(http_status_codes), std::end(http_status_codes));
     std::transform(urls.begin(), urls.end(), urls.begin(), [](const std::string& s) -> std::string {
             return fmt::format("{:s}/error/{:s}", http_echo_service_address, s.substr(0, 3)); });
     REQUIRE(!urls.empty());
