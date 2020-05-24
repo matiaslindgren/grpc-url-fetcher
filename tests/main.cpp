@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <csignal>
+#include <cstdlib>
 #include <numeric>
 #include <string>
 #include <thread>
@@ -12,8 +13,8 @@
 #undef CATCH_CONFIG_MAIN
 #include <fmt/format.h>
 
-const std::string http_echo_service_address{"localhost:8000"};
-const std::string grpc_test_address{"localhost:7000"};
+const std::string http_echo_service_address{std::getenv("URLFETCHER_ECHO_SERVICE_ADDRESS")};
+const std::string grpc_test_address{std::getenv("URLFETCHER_GRPC_TEST_ADDRESS")};
 const auto test_loglevel{spdlog::level::warn};
 
 
@@ -41,6 +42,11 @@ std::vector<std::string> slurp_lines(const std::string& filename) {
     return lines;
 }
 
+
+TEST_CASE("Server addresses are defined", "[address]") {
+    REQUIRE(!http_echo_service_address.empty());
+    REQUIRE(!grpc_test_address.empty());
+}
 
 TEST_CASE("Server terminates on SIGINT and SIGTERM", "[server]") {
     using urlfetcher::server::run_forever;
