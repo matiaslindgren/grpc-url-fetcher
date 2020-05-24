@@ -42,18 +42,20 @@ int main(int argc, char** argv) {
     URLFetcherClient fetcher{grpc_address};
     // Request a fetch of URLs, this call resolves immediately, returning a list of keys
     std::vector<uint64> keys = fetcher.request_fetches(urls);
-    std::copy(keys.begin(), keys.end(), std::ostream_iterator<uint64>(std::cout, ", "));
+    std::cout << "Pending fetch UUIDs returned by the server:\n";
+    std::copy(keys.begin(), keys.end(), std::ostream_iterator<uint64>(std::cout, " "));
     std::cout << "\n";
     // The server passes all URLs to its thread pool, which starts to fetch them with cURL
     // We can ask for the resolved requests by passing the UUIDs returned by the server
     std::vector<Response> responses = fetcher.resolve_fetches(keys);
+    std::cout << "Resolved URL requests returned by the server:\n";
     for (int i = 0; i < urls.size(); ++i) {
         std::cout
             << urls[i]
             << ", header size " << responses[i].header().size()
             << ", body size " << responses[i].body().size()
             << ", error code " << responses[i].curl_error()
-            << "\n------------\n";
+            << "\n";
     }
     return 0;
 }
@@ -64,17 +66,17 @@ Send a SIGTERM or SIGINT to the server to shut it down.
 
 ## Building and testing with Docker
 
-Three Dockerfiles have been included for building the project and the test runners.
+Five Dockerfiles have been included for building the project and the test runners.
 Build them by running:
 ```
 sh docker/build-all-images.sh
 ```
-Run `docker images` and check that you have these images:
+Run `docker images` and check that you have at least these three images:
 ```
 REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
-test-runner         v1                  535c66a4c3c1        12 minutes ago      154MB
-http-echo-server    v1                  76047517d54b        12 minutes ago      132MB
-urlfetcher          v1                  416c0361ed24        13 minutes ago      154MB
+test-runner         v1                  56fd9d9a9dad        9 seconds ago       156MB
+http-echo-server    v1                  4d3c73c1985f        3 minutes ago       133MB
+urlfetcher          v1                  212403e61f56        3 minutes ago       156MB
 ```
 To run the tests, you need to first start a Flask HTTP echo server that simply returns the URL route key for every HTTP GET request.
 ```
@@ -87,4 +89,24 @@ sh docker/run-tests.sh
 The gRPC URL fetcher will request a lot of URLs from the localhost Flask server.
 It will also request a few external URLs (see `external_urls` in `tests/main.cpp`).
 
-Note that you might need to configure Docker networking to allow the URL fetcher access both the `http-echo-server` and the web.
+**NOTE** There are some hard-coded Docker network IPs in the Dockerfiles that you might need to fix to ensure the containers can discuss with each other.
+
+### C++ API example
+
+Two additional Dockerfiles have been included for running the executables created from `src/URLFetcherServer.cpp` and `src/URLFetcherClient.cpp`.
+Running `docker/build-all-images.sh` should have also created these two images:
+```
+REPOSITORY          TAG                 IMAGE ID            CREATED             SIZE
+urlfetcher-server   v1                  453ac0d53898        3 minutes ago       156MB
+urlfetcher-client   v1                  4de14004f5c9        3 minutes ago       156MB
+```
+These correspond to the simple readme examples shown above, to which command line argument parsing has been added with `cxxopts`.
+
+To run these as Docker containers, start the server:
+```
+docker run --name=urlfetcher-server --network=bridge --rm urlfetcher-server:v1
+```
+In another terminal, start the client to request 5 external URLs:
+```
+docker run --name=urlfetcher-client --network=bridge --rm urlfetcher-client:v1
+```

@@ -254,8 +254,8 @@ TEST_CASE("Server returns monotonically increasing UUIDs for request_fetches for
     urlfetcher::client::logger->set_level(test_loglevel);
     std::thread server_runner([] { run_forever(grpc_test_address); });
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    for (int num_clients : {1, 10, 50, 100, 200}) {
-        for (int num_urls : {1, 10, 50, 100, 200}) {
+    for (int num_clients : {1, 10, 50, 100}) {
+        for (int num_urls : {1, 10, 50, 100}) {
             std::vector<std::string> urls = generate_localhost_echo_urls(num_urls);
             std::vector<std::thread> clients(num_clients);
             std::vector<std::vector<uint64>> all_keys(num_clients);
@@ -296,8 +296,8 @@ TEST_CASE("Server returns resolved URLs when requested with the UUIDs from reque
     urlfetcher::client::logger->set_level(test_loglevel);
     std::thread server_runner([] { run_forever(grpc_test_address); });
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    for (int num_clients : {1, 10, 50, 100, 200}) {
-        for (int num_urls : {1, 10, 50, 100, 200}) {
+    for (int num_clients : {1, 10, 50, 100}) {
+        for (int num_urls : {1, 10, 50, 100}) {
             std::vector<std::string> urls = generate_localhost_echo_urls(num_urls);
             std::vector<std::thread> clients(num_clients);
             std::vector<std::vector<Response>> all_responses(num_clients);

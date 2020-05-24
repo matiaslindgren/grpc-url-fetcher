@@ -67,4 +67,7 @@ FROM debian:buster-slim
 COPY --from=0 /usr/src/urlfetcher/build/URLFetcher* /usr/local/bin/
 
 # Install runtime dependencies
-RUN apt update && apt install -y --no-install-recommends libcurl4
+RUN \
+	apt update \
+	&& apt install -y --no-install-recommends libcurl4 ca-certificates \
+	&& update-ca-certificates

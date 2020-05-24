@@ -1,1 +1,1 @@
-docker run --network=host --rm test-runner:v1
+docker run --name=urlfetcher-test-runner --network=bridge --rm test-runner:v1

@@ -58,18 +58,20 @@ int main(int argc, char** argv) {
     URLFetcherClient fetcher{grpc_address};
     // Request a fetch of URLs, this call resolves immediately, returning a list of keys
     std::vector<uint64> keys = fetcher.request_fetches(urls);
-    std::copy(keys.begin(), keys.end(), std::ostream_iterator<uint64>(std::cout, ", "));
+    std::cout << "Pending fetch UUIDs returned by the server:\n";
+    std::copy(keys.begin(), keys.end(), std::ostream_iterator<uint64>(std::cout, " "));
     std::cout << "\n";
     // The server passes all URLs to its thread pool, which starts to fetch them with cURL
     // We can ask for the resolved requests by passing the UUIDs returned by the server
     std::vector<Response> responses = fetcher.resolve_fetches(keys);
+    std::cout << "Resolved URL requests returned by the server:\n";
     for (int i = 0; i < urls.size(); ++i) {
         std::cout
             << urls[i]
             << ", header size " << responses[i].header().size()
             << ", body size " << responses[i].body().size()
             << ", error code " << responses[i].curl_error()
-            << "\n------------\n";
+            << "\n";
     }
     return 0;
 }
