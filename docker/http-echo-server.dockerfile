@@ -11,4 +11,4 @@ RUN \
 
 ENV FLASK_APP=/usr/src/urlfetcher/tests/http_echo_server.py
 
-ENTRYPOINT ["flask", "run", "--host=172.17.0.2", "--port=7000"]
+ENTRYPOINT ["flask", "run", "--host=172.17.0.2", "--port=7000", "--with-threads"]
