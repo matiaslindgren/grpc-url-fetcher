@@ -21,9 +21,9 @@ std::string getenv_or_default(const std::string& key, const std::string& def = "
 }
 
 const std::string http_echo_service_address{
-    getenv_or_default("URLFETCHER_ECHO_SERVICE_ADDRESS", "localhost:8000")};
+    getenv_or_default("URLFETCHER_ECHO_SERVICE_ADDRESS", "localhost:7000")};
 const std::string grpc_test_address{
-    getenv_or_default("URLFETCHER_GRPC_TEST_ADDRESS", "localhost:7000")};
+    getenv_or_default("URLFETCHER_GRPC_TEST_ADDRESS", "localhost:8000")};
 const auto test_loglevel{spdlog::level::warn};
 
 constexpr const char* external_urls[]{
