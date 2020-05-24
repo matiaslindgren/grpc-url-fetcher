@@ -89,7 +89,9 @@ sh docker/run-tests.sh
 The gRPC URL fetcher will request a lot of URLs from the localhost Flask server.
 It will also request a few external URLs (see `external_urls` in `tests/main.cpp`).
 
-**NOTE** There are some hard-coded Docker network IPs in the Dockerfiles that you might need to fix to ensure the containers can discuss with each other.
+The amount of tests have been reduced in the executable Docker image `test-runner` because sometimes the tests fail as the little Flask server cannot keep up with thousands of concurrent requests.
+
+**NOTE** There are some hard-coded Docker network IPs in the Dockerfiles that you might need to fix to ensure the containers can discuss with each other if Docker happens to use different IPs in the `bridge` network.
 
 ### C++ API example
 
