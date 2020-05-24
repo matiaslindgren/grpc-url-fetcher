@@ -13,7 +13,7 @@ using urlfetcher::server::run_forever;
 
 int main(int argc, char** argv) {
     std::string grpc_address{"localhost:8000"};
-    int thread_pool_size{8};
+    int thread_pool_size{16};
     run_forever(grpc_address, thread_pool_size);
     return 0;
 }
@@ -42,6 +42,8 @@ int main(int argc, char** argv) {
     URLFetcherClient fetcher{grpc_address};
     // Request a fetch of URLs, this call resolves immediately, returning a list of keys
     std::vector<uint64> keys = fetcher.request_fetches(urls);
+    std::copy(keys.begin(), keys.end(), std::ostream_iterator<uint64>(std::cout, ", "));
+    std::cout << "\n";
     // The server passes all URLs to its thread pool, which starts to fetch them with cURL
     // We can ask for the resolved requests by passing the UUIDs returned by the server
     std::vector<Response> responses = fetcher.resolve_fetches(keys);

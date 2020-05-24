@@ -33,6 +33,7 @@ auto logger = spdlog::stdout_logger_mt("URLFetcherClient");
 class URLFetcherClient final {
 public:
     explicit URLFetcherClient(const std::string& server_address) {
+        logger->debug("Creating URLFetcherClient with server address '{:s}'", server_address);
         auto channel = grpc::CreateChannel(server_address, grpc::InsecureChannelCredentials());
         stub_ = URLFetcher::NewStub(channel);
     }
