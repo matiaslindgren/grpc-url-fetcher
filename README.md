@@ -84,3 +84,5 @@ sh docker/run-tests.sh
 ```
 The gRPC URL fetcher will request a lot of URLs from the localhost Flask server.
 It will also request a few external URLs (see `external_urls` in `tests/main.cpp`).
+
+Note that you might need to configure Docker networking to allow the URL fetcher access both the `http-echo-server` and the web.
