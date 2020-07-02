@@ -2,6 +2,8 @@
 
 gRPC and cURL powered URL fetching service with internal thread pool to hide HTTP latency.
 
+![animated-sketch-of-service-data-flow](./demo.gif)
+
 ## C++ API
 
 Start a server:
