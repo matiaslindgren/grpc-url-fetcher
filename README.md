@@ -1,6 +1,7 @@
 # grpc-url-fetcher
 
 gRPC and cURL powered URL fetching service with internal thread pool to hide HTTP latency.
+URL fetching is used to simulate generic, long running, high-latency tasks performed in the backend.
 
 ![animated-sketch-of-service-data-flow](./demo.gif)
 
