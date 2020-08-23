@@ -47,39 +47,42 @@ size_t curl_response_to_std_string(void* curl_response, size_t size, size_t nmem
 }
 
 Response fetch_URL(const std::string& url) {
-    Response response;
-    CURL *curl = curl_easy_init();
+    std::unique_ptr<CURL, decltype(&curl_easy_cleanup)>
+        curl{curl_easy_init(), &curl_easy_cleanup};
     if (!curl) {
         logger->critical("Failed to initialize cURL instance, cannot request given URL '{:s}'", url);
+        return Response{};
+    }
+
+    // Prepare to fetch given URL
+    curl_easy_setopt(curl.get(), CURLOPT_URL, url.c_str());
+    // If requested URL is redirected, fetch the contents after redirection
+    curl_easy_setopt(curl.get(), CURLOPT_FOLLOWLOCATION, 1L);
+    // Timeout if there's no response within given time
+    curl_easy_setopt(curl.get(), CURLOPT_TIMEOUT_MS, TIMEOUT_CURL_GET_MS);
+
+    // On response, use callback to write header and body into two different strings
+    std::string result_header;
+    std::string result_body;
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEFUNCTION, curl_response_to_std_string);
+    curl_easy_setopt(curl.get(), CURLOPT_HEADERDATA, &result_header);
+    curl_easy_setopt(curl.get(), CURLOPT_WRITEDATA, &result_body);
+
+    // Perform the request
+    logger->debug("cURL performing GET on '{:s}' with timeout {:d} ms", url, TIMEOUT_CURL_GET_MS);
+    CURLcode error = curl_easy_perform(curl.get());
+
+    Response response;
+    // Write response object if there were no errors
+    if (error != CURLE_OK) {
+        logger->error("cURL GET failed with error string '{:s}'", curl_easy_strerror(error));
     }
     else {
-        // Prepare to fetch given URL
-        curl_easy_setopt(curl, CURLOPT_URL, url.c_str());
-        // If requested URL is redirected, fetch the contents after redirection
-        curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
-        // Timeout if there's no response within given time
-        curl_easy_setopt(curl, CURLOPT_TIMEOUT_MS, TIMEOUT_CURL_GET_MS);
-        // On response, use callback to write header and body into two different strings
-        std::string result_header;
-        std::string result_body;
-        curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, curl_response_to_std_string);
-        curl_easy_setopt(curl, CURLOPT_HEADERDATA, &result_header);
-        curl_easy_setopt(curl, CURLOPT_WRITEDATA, &result_body);
-        // Perform the request
-        logger->debug("cURL performing GET on '{:s}' with timeout {:d} ms", url, TIMEOUT_CURL_GET_MS);
-        CURLcode error = curl_easy_perform(curl);
-        // Write response object if there were no errors
-        if (error != CURLE_OK) {
-            logger->error("cURL GET failed with error string '{:s}'", curl_easy_strerror(error));
-        }
-        else {
-            logger->debug("cURL GET successful on '{:s}'", url);
-            response.set_header(result_header);
-            response.set_body(result_body);
-        }
-        response.set_curl_error(error);
-        curl_easy_cleanup(curl);
+        logger->debug("cURL GET successful on '{:s}'", url);
+        response.set_header(result_header);
+        response.set_body(result_body);
     }
+    response.set_curl_error(error);
     return response;
 }
 
